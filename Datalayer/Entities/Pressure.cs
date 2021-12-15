@@ -10,7 +10,7 @@ namespace Datalayer.Entities
     {
         public int PressureId { get; set; }
 
-        public DateTime Time { get; set; }
+        public DateTime Date { get; set; }
 
         public double Value { get; set; }
 

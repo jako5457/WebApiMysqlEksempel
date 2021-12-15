@@ -4,14 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Datalayer.Entities
+namespace ServiceLayer.Dto
 {
-    public class Temprature
+    public class ValueBaseDto
     {
-        public int TempratureId { get; set; }
 
         public DateTime Date { get; set; }
 
         public double Value { get; set; }
+
     }
 }
