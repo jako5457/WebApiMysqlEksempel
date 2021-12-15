@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace ServiceLayer.Tempratures
 {
-    internal class TempratureService : ITempratureService
+    public class TempratureService : ITempratureService
     {
 
         private DataContext _context;

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace ServiceLayer.Tempratures
 {
-    internal interface ITempratureService
+    public interface ITempratureService
     {
 
         public Task<TempratureDto> GetLatestAsync();
