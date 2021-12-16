@@ -3,6 +3,7 @@ using ServiceLayer.Pressures;
 using ServiceLayer.Tempratures;
 using Microsoft.EntityFrameworkCore;
 using Pomelo;
+using ServiceLayer.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 ConfigurationManager configuration = builder.Configuration;
@@ -15,10 +16,15 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<DataContext>(settings => settings.UseMySql(configuration.GetConnectionString("Database"), MariaDbServerVersion.LatestSupportedServerVersion));
 
-builder.Services.AddScoped<ITempratureService, TempratureService>();
-builder.Services.AddScoped<IPressureService, PressureService>();
+builder.Services.AddTransient<ITempratureService, TempratureService>();
+builder.Services.AddTransient<IPressureService, PressureService>();
+builder.Services.AddSingleton<IAmqpListenerService,AmqpListenerService>();
 
 var app = builder.Build();
+
+var amqservice = app.Services.GetRequiredService<IAmqpListenerService>();
+
+amqservice.SetConnection("10.135.16.160", "guest", "guest");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -33,4 +39,5 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+amqservice.Start();
 app.Run();
