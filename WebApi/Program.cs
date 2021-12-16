@@ -13,12 +13,16 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddDbContext<DataContext>(settings => settings.UseMySql(configuration.GetConnectionString("Database"), MariaDbServerVersion.LatestSupportedServerVersion));
+builder.Services.AddDbContext<DataContext>(settings => settings.UseMySql(configuration.GetValue<String>("ConnectionString"), MariaDbServerVersion.LatestSupportedServerVersion));
 
 builder.Services.AddScoped<ITempratureService, TempratureService>();
 builder.Services.AddScoped<IPressureService, PressureService>();
 
 var app = builder.Build();
+
+var logger = app.Services.GetRequiredService<ILogger<Program>>();
+
+logger.LogInformation(configuration.GetValue<String>("ConnectionString"));
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
