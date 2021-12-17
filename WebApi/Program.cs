@@ -24,6 +24,12 @@ var app = builder.Build();
 
 var amqservice = app.Services.GetRequiredService<IAmqpListenerService>();
 
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<DataContext>();
+    context.Database.EnsureCreated();
+}
+
 amqservice.SetConnection("10.135.16.160", "guest", "guest");
 
 // Configure the HTTP request pipeline.
