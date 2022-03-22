@@ -1,25 +1,23 @@
 version: '3.4'
-
 services:
 
   webapi:
-    image: ${DOCKER_REGISTRY-}webapi
+    image: '${DOCKER_REGISTRY-}webapi'
     build:
       context: .
       dockerfile: WebApi/Dockerfile
     links:
-        - database
+      - database
     environment:
-        - ConnectionString=Server=database;Database=DataDB;Uid=root;Pwd=P@ssw0rd;
+      - ConnectionString=Server=database;Database=DataDB;Uid=root;Pwd=P@ssw0rd;
     ports:
-        - 80:80
-        - 443:443
-
-  # Database til Webapi
+      - '80:80'
+      - '443:443'
+      
   database:
     image: mariadb
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: P@ssw0rd
     ports:
-        - 3306:3306
+      - '3306:3306'
