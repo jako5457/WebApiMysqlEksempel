@@ -1,5 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using ServiceLayer.Pressures;
@@ -12,37 +13,30 @@ using System.Threading.Tasks;
 
 namespace ServiceLayer.Data
 {
-    public class AmqpListenerService : IAmqpListenerService
+    public class AmqpService : IHostedService
     {
-        private string _Host;
-        private string _User;
-        private string _Password;
-
         private IServiceProvider _serviceProvider;
 
         private EventingBasicConsumer Consumer;
         private IConnection connection;
         private IModel Channel;
 
-        public AmqpListenerService(IServiceProvider serviceProvider)
+        public AmqpService(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
         }
 
-        public string Host { get => _Host; set => _Host = value; }
-        public string User { get => _User; set => _User = value; }
-        public string Password { get => _Password; set => _Password = value; }
-
-        public void SetConnection(string host, string user, string pass)
+        public Task StartAsync(CancellationToken cancellationToken)
         {
-            _Host = host;
-            _User = user;
-            _Password = pass;
-        }
+            IConfiguration config = _serviceProvider.GetService<IConfiguration>();
 
-        public void Start()
-        {
-            var factory = new ConnectionFactory() { HostName = _Host, UserName = _User, Password = _Password };
+            var section = config?.GetSection("Amqp");
+
+            var factory = new ConnectionFactory() {
+                HostName = section.GetValue<string>("Hostname"), 
+                UserName = section.GetValue<string>("Username"), 
+                Password = section.GetValue<string>("Password")
+            };
 
             connection = factory.CreateConnection();
             Channel = connection.CreateModel();
@@ -61,6 +55,14 @@ namespace ServiceLayer.Data
             Channel.BasicConsume(queue: "WebApi",
                                  autoAck: true,
                                  consumer: consumer);
+
+            return Task.CompletedTask;
+        }
+
+        public Task StopAsync(CancellationToken cancellationToken)
+        {
+            connection.Close();
+            return Task.CompletedTask;
         }
 
         private async void Consumer_Received(object? sender, BasicDeliverEventArgs e)
@@ -82,7 +84,7 @@ namespace ServiceLayer.Data
                     default:
                         break;
                 }
-            }   
+            }
         }
     }
 }

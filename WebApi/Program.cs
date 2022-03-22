@@ -16,21 +16,18 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<DataContext>(settings => settings.UseMySql(configuration.GetValue<String>("ConnectionString"), MariaDbServerVersion.LatestSupportedServerVersion));
 
+builder.Services.AddHostedService<AmqpService>();
+
 builder.Services.AddTransient<ITempratureService, TempratureService>();
 builder.Services.AddTransient<IPressureService, PressureService>();
-builder.Services.AddSingleton<IAmqpListenerService,AmqpListenerService>();
 
 var app = builder.Build();
-
-var amqservice = app.Services.GetRequiredService<IAmqpListenerService>();
 
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<DataContext>();
     context.Database.EnsureCreated();
 }
-
-amqservice.SetConnection("10.135.16.160", "guest", "guest");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -45,5 +42,4 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-amqservice.Start();
 app.Run();
